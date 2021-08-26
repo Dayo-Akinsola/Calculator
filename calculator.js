@@ -10,10 +10,12 @@ const division = (a, b) => a / b;
 // function to use the operators
 const operate = (operator, a, b) => operator(a, b);
 
+// function to display numbers on the calculator screen
 const displayNumber = (numbers, input, output, equation) => {
     console.log(numbers);
     numbers.forEach(number => {
         number.addEventListener('click', (event) =>{
+            // if statment resets the calculator if a number is pressed after the equals sign is pressed
             if (equation.length === 1){
                 input.textContent = `${number.dataset.number}`;
                 equation.splice(0, 1);
@@ -27,6 +29,27 @@ const displayNumber = (numbers, input, output, equation) => {
     })
 }
 
+// Shows decimal point on the display
+const decimals = (decimalPoint, input, output, equation) => {
+    decimalPoint.addEventListener('click', (event) => {
+        if (equation.length <= 1 && output.textContent !== ''){
+            input.textContent = '0';
+            equation.splice(0, 1);
+            output.textContent = '';
+        }
+
+        else if (equation.length <=1 && output.textContent === ''){
+            input.textContent = '0';
+        }
+
+        else if (input.textContent[input.textContent.length - 1] === " "){
+            input.textContent += '0';
+        }
+        input.textContent += '.'
+        decimalPoint.disabled = true;
+    })
+}
+
 //function to display a number on screen when it is clicked
 const solveEquation = () => {
     const numbers = document.querySelectorAll('[data-number]');
@@ -34,6 +57,7 @@ const solveEquation = () => {
     const output = document.querySelector('#equation')
     const operators = document.querySelectorAll('[data-operator]');
     const equalSign = document.querySelector(['[data-result]']);
+    const decimalPoint = document.querySelector('[data-decimal]');
     let operation;
     const equation = [];
     displayNumber(numbers, input, output, equation);
@@ -49,6 +73,7 @@ const solveEquation = () => {
                 equation.push(event.target.dataset.operator);
                 console.log(equation);
                 input.textContent += ` ${operator.dataset.operator} `;
+                decimalPoint.disabled = false;
             }
 
             // Checks for the index of the last operator added to the equations array and adds the next number into the array.
@@ -66,18 +91,22 @@ const solveEquation = () => {
                     input.textContent += ` ${event.target.dataset.operator} `;
                     operation = event.target.dataset.operator;
                     console.log(equation);
+                    decimalPoint.disabled = false;
                 }
             }
 
             if (equation.length === 1){
-                output.textContent = equation[0];
+                output.textContent = parseFloat(parseFloat(equation[0]).toFixed(4)).toString();
                 equation.push(event.target.dataset.operator);
                 input.textContent += ` ${event.target.dataset.operator} `;
                 operation = event.target.dataset.operator;
                 console.log(equation);
+                decimalPoint.disabled = false;
             }
         })
     })
+
+    decimals(decimalPoint, input, output, equation);
 
     equalSign.addEventListener('click', (event) => {
         if (input.textContent[input.textContent.length - 1] !== " " && equation.length > 1)
@@ -91,6 +120,7 @@ const solveEquation = () => {
             // Variable checks if there is a multiplication or division symbol in the equation
             let multOrDiv = true; 
 
+            // Solves the calculation in the equations array according to operator precedence
             while (equation.length !== 1){
                 if (multOrDiv === true){
                     for (let i = 1; i < equation.length; i += 2){
@@ -123,7 +153,9 @@ const solveEquation = () => {
                 }
             }
             output.textContent = input.textContent + ' =';
-            input.textContent = equation[0];
+            //Sets decimals to 4 decimal places and deals with floating point errors.
+            input.textContent = parseFloat(parseFloat(equation[0]).toFixed(4)).toString();
+            decimalPoint.disabled = false;
         }
         })
 }
