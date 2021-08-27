@@ -80,8 +80,12 @@ button{
 #powerDisplay{
     vertical-align: super;
     font-size: 80%;
-    position: absolute;
+    position: sticky;
     bottom: 0;
     right: 0;
     padding-bottom: 20px;
+}
+
+#powerSymbol{
+    font-size: 0px;
 }
