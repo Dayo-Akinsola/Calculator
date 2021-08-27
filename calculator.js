@@ -1,4 +1,4 @@
-//Basic operators
+//Operators
 const addition = (a, b) => a + b;
 
 const subtraction = (a, b) => a - b;
@@ -7,12 +7,24 @@ const multiplication = (a, b) => a * b;
 
 const division = (a, b) => a / b;
 
+const power = (a, b) => a**b;
+
+const numbers = document.querySelectorAll('[data-number]');
+const input = document.querySelector('#input');
+const output = document.querySelector('#equation')
+const operators = document.querySelectorAll('[data-operator]');
+const equalSign = document.querySelector(['[data-result]']);
+const decimalPoint = document.querySelector('[data-decimal]');
+const powerButton = document.querySelector('[data-power]');
+console.log(powerButton);
+let operation;
+const equation = [];
+
 // function to use the operators
 const operate = (operator, a, b) => operator(a, b);
 
 // function to display numbers on the calculator screen
-const displayNumber = (numbers, input, output, equation) => {
-    console.log(numbers);
+const displayNumber = () => {
     numbers.forEach(number => {
         number.addEventListener('click', (event) =>{
             // if statment resets the calculator if a number is pressed after the equals sign is pressed
@@ -23,23 +35,58 @@ const displayNumber = (numbers, input, output, equation) => {
             }
             else {
                 input.textContent += `${number.dataset.number}`;
-                console.log(equation);
             }
         })
     })
 }
 
+const operatorsDisplay = () => {
+    operators.forEach(operator => {
+        operator.addEventListener('click', (event) => {
+            // Adds operands and operators to equations array when there is nothing on the display.
+            if (equation.length === 0)
+            {
+                let firstNumber = (input.textContent) ? input.textContent : input.textContent = '0';
+                operation = operator.dataset.operator;
+                equation.push(firstNumber);
+                equation.push(event.target.dataset.operator);
+                input.textContent += ` ${operator.dataset.operator} `;
+            }
+
+            // Checks for the index of the last operator added to the equations array and pushes the next number into the array.
+            // This allows the user to perform multiple operations.
+            else if (equation.length !== 1){
+                // If statement to stop user from inputting two operators next to eachother
+                if (input.textContent[input.textContent.length - 1] !== " ")
+                {
+                    const operationIndex = input.textContent.lastIndexOf(operation) + 2;
+                    let number = input.textContent.substring(operationIndex);
+                    equation.push(number);
+                    equation.push(event.target.dataset.operator);
+                    input.textContent += ` ${event.target.dataset.operator} `;
+                    operation = event.target.dataset.operator;
+                }
+            }
+
+            if (equation.length === 1){
+                output.textContent = parseFloat(parseFloat(equation[0]).toFixed(4)).toString();
+                equation.push(event.target.dataset.operator);
+                input.textContent += ` ${event.target.dataset.operator} `;
+                operation = event.target.dataset.operator;
+            }
+            decimalPoint.disabled = false;
+        })
+    })
+
+}
+
 // Shows decimal point on the display
-const decimals = (decimalPoint, input, output, equation) => {
+const decimals = () => {
     decimalPoint.addEventListener('click', (event) => {
         if (equation.length <= 1 && output.textContent !== ''){
             input.textContent = '0';
             equation.splice(0, 1);
             output.textContent = '';
-        }
-
-        else if (equation.length <=1 && output.textContent === ''){
-            input.textContent = '0';
         }
 
         else if (input.textContent[input.textContent.length - 1] === " "){
@@ -50,71 +97,13 @@ const decimals = (decimalPoint, input, output, equation) => {
     })
 }
 
-//function to display a number on screen when it is clicked
-const solveEquation = () => {
-    const numbers = document.querySelectorAll('[data-number]');
-    const input = document.querySelector('#input');
-    const output = document.querySelector('#equation')
-    const operators = document.querySelectorAll('[data-operator]');
-    const equalSign = document.querySelector(['[data-result]']);
-    const decimalPoint = document.querySelector('[data-decimal]');
-    let operation;
-    const equation = [];
-    displayNumber(numbers, input, output, equation);
-
-    operators.forEach(operator => {
-        operator.addEventListener('click', (event) => {
-            // Adds operands and operators to equations array when there is nothing on the display.
-            if (equation.length === 0)
-            {
-                let firstNumber = (input.textContent) ? input.textContent : input.textContent = '0';
-                operation = operator.dataset.operator;
-                equation.push(firstNumber);
-                equation.push(event.target.dataset.operator);
-                console.log(equation);
-                input.textContent += ` ${operator.dataset.operator} `;
-                decimalPoint.disabled = false;
-            }
-
-            // Checks for the index of the last operator added to the equations array and adds the next number into the array.
-            // This allows the user to perform multiple operations on multiple numbers.
-            else if (equation.length !== 1){
-                // If statement to stop user from input operators next to eachother
-                console.log(equation);
-                if (input.textContent[input.textContent.length - 1] !== " ")
-                {
-                    const operationIndex = input.textContent.lastIndexOf(operation) + 2;
-                    console.log(operationIndex);
-                    let number = input.textContent.substring(operationIndex);
-                    equation.push(number);
-                    equation.push(event.target.dataset.operator);
-                    input.textContent += ` ${event.target.dataset.operator} `;
-                    operation = event.target.dataset.operator;
-                    console.log(equation);
-                    decimalPoint.disabled = false;
-                }
-            }
-
-            if (equation.length === 1){
-                output.textContent = parseFloat(parseFloat(equation[0]).toFixed(4)).toString();
-                equation.push(event.target.dataset.operator);
-                input.textContent += ` ${event.target.dataset.operator} `;
-                operation = event.target.dataset.operator;
-                console.log(equation);
-                decimalPoint.disabled = false;
-            }
-        })
-    })
-
-    decimals(decimalPoint, input, output, equation);
-
+const equals = () => {
     equalSign.addEventListener('click', (event) => {
         if (input.textContent[input.textContent.length - 1] !== " " && equation.length > 1)
         {
             const operatorIndex = input.textContent.lastIndexOf(operation) + 2;
             const lastNumber = input.textContent.substring(operatorIndex);
             equation.push(lastNumber);
-            console.log(equation);
             let operator;
             let result;
             // Variable checks if there is a multiplication or division symbol in the equation
@@ -158,6 +147,26 @@ const solveEquation = () => {
             decimalPoint.disabled = false;
         }
         })
+}
+
+const powerDisplay = () => {
+    powerButton.addEventListener('click', (event) => {
+        const powerTag = document.querySelector('#powerDisplay');
+        console.log(powerTag);
+        powerTag.textContent = '22';
+        input.firstChild.nodeValue = '3';
+
+    })
+}
+
+
+
+const solveEquation = () => {
+    displayNumber();
+    decimals();
+    operatorsDisplay();
+    equals();
+    powerDisplay();
 }
 
 
