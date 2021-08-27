@@ -76,3 +76,12 @@ button{
     position: relative;
     top: 120px;
 }
+
+#powerDisplay{
+    vertical-align: super;
+    font-size: 80%;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding-bottom: 20px;
+}
