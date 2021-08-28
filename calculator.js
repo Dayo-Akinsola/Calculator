@@ -9,6 +9,30 @@ const division = (a, b) => a / b;
 
 const power = (a, b) => a**b;
 
+const squareRoot = a => a**(1/2);
+
+const cubeRoot = a => a**(1/3);
+
+const logBase2 = (a) => {
+    let count = 0;
+    while (a > 1){
+        a = a / 2;
+        count++;
+    }
+
+    return count;
+}
+
+const logBase10 = (a) => {
+    let count = 0;
+    while (a > 1){
+        a = a / 10;
+        count++;
+    }
+
+    return count;
+}
+
 const numbers = document.querySelectorAll('[data-number]');
 const input = document.querySelector('#input');
 const output = document.querySelector('#equation');
@@ -16,6 +40,7 @@ const operators = document.querySelectorAll('[data-operator]');
 const equalSign = document.querySelector(['[data-result]']);
 const decimalPoint = document.querySelector('[data-decimal]');
 const powerButton = document.querySelector('[data-power]');
+const rootButtons = document.querySelectorAll('[data-root]');
 let operation;
 const equation = [];
 // Controls when numbers are inputted as a power (e.g. x^y when true, y when false).
@@ -53,6 +78,13 @@ const operatorsDisplay = () => {
             if ( powerNumbers === true && (!power.textContent)){
                 power.remove(); powerSymbol.remove();
             }
+
+            // Does same as above for roots.
+            rootButtons.forEach(button => {
+                if (input.textContent[input.textContent.length - 1] === button.dataset.root){
+                    input.textContent += '0';
+                }
+            })
             
             // Adds operands and operators to equations array when there is nothing on the display.
             if (equation.length === 0)
@@ -94,6 +126,7 @@ const operatorsDisplay = () => {
             decimalPoint.disabled = false;
             powerNumbers = false;
             powerButton.disabled = false;
+            rootButtons.forEach(button => button.disabled = false);
         })
     })
 
@@ -102,13 +135,6 @@ const operatorsDisplay = () => {
 // Shows decimal point on the display
 const decimals = () => {
     decimalPoint.addEventListener('click', (event) => {
-        if (equation.length <= 1 && output.textContent !== ''){
-            input.textContent = '0';
-            equation.splice(0, 1);
-            output.textContent = '';
-            input.textContent += '.';
-        }
-
         if (powerNumbers === true){
             const power = document.querySelector('#powerDisplay');
             if (power.textContent.length === 0){
@@ -118,14 +144,110 @@ const decimals = () => {
             power.textContent += '.';
         }
 
+        else if (equation.length === 0 && !input.textContent){
+            input.textContent = '0';
+            input.textContent += '.';
+        }
+
+        else if (equation.length <= 1 && output.textContent !== ''){
+            input.textContent = '0';
+            equation.splice(0, 1);
+            output.textContent = '';
+            input.textContent += '.';
+        }
+
         else if (input.textContent[input.textContent.length - 1] === " "){
             input.textContent += '0';
+            input.textContent += '.';
+        }
+
+        else{
             input.textContent += '.';
         }
         decimalPoint.disabled = true;
     })
 }
 
+// Activates when the power button is clicked so that numbers clicked are exponents.
+const powerDisplay = () => {
+    powerButton.addEventListener('click', (event) => {
+        if ( (!input.textContent) 
+            || input.textContent[input.textContent.length - 1] === ' ' 
+            || input.textContent[input.textContent.length - 1] === rootButtons[0].dataset.root 
+            || input.textContent[input.textContent.length - 1] === rootButtons[1].dataset.root){
+
+            input.textContent += '0';
+        }
+
+        if (input.textContent[input.textContent.length - 1] !== "."){
+            const powerSymbol = document.createElement('span');
+            const power = document.createElement('span');
+            powerSymbol.id = 'powerSymbol';
+            powerSymbol.textContent = '^';
+            power.id = 'powerDisplay';
+            input.appendChild(powerSymbol);
+            input.appendChild(power);
+            powerNumbers = true;
+            addPower(power);
+            powerButton.disabled = true;
+
+        }
+
+    })
+
+}
+
+const addPower = (span) => {
+    numbers.forEach(number => {
+        number.addEventListener('click', (event) => {
+            if (powerNumbers === true){
+                span.textContent += event.target.dataset.number;
+            }
+        })
+    })
+
+    rootButtons.forEach(button => {
+        button.addEventListener('click', (event) => {  
+            if (powerNumbers === true){
+                span.textContent += event.target.dataset.root;
+                rootButtons[0].disabled = true; rootButtons[1].disabled = true;
+            }
+        })
+    })
+
+}
+
+const rootDisplay = () => {
+    rootButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+            if (button === rootButtons[0] && powerNumbers === false && !document.querySelector('#powerDisplay')){
+                input.textContent += event.target.dataset.root;
+                rootButtons[0].disabled = true; rootButtons[1].disabled = true;
+            }
+
+            if (button === rootButtons[1] && powerNumbers === false && !document.querySelector('#powerDisplay')){
+                input.textContent += event.target.dataset.root;
+                button.disabled = true;
+                rootButtons[0].disabled = true; rootButtons[1].disabled = true;
+            }
+
+        })
+    })
+}
+
+const solvePowers = (result) => {
+    // Goes through the equations array an checks for any ^ so powers can be solved first
+    for (let i in equation){
+        if (equation[i].includes('^')){
+            const caratIndex = equation[i].indexOf('^');
+            const base = equation[i].slice(0, caratIndex);
+            const exponent = equation[i].slice(caratIndex + 1);
+            result = operate(power, parseFloat(base), parseFloat(exponent));
+            result = result.toString();
+            equation.splice(i, 1, result);
+        }
+    }
+}
 
 const equals = () => {
     equalSign.addEventListener('click', (event) => {
@@ -138,20 +260,8 @@ const equals = () => {
             let result;
             // Variable checks if there is a multiplication or division symbol in the equation
             let multOrDiv = true; 
-            console.log(equation);
 
-            // Goes through the equations array an checks for any ^ so powers can be solved first
-            for (let i in equation){
-                if (equation[i].includes('^')){
-                    const caratIndex = equation[i].indexOf('^');
-                    const base = equation[i].slice(0, caratIndex);
-                    const exponent = equation[i].slice(caratIndex + 1);
-                    result = operate(power, parseFloat(base), parseFloat(exponent));
-                    result = result.toString();
-                    equation.splice(i, 1, result);
-                }
-                console.log(i);
-            }
+            solvePowers(result);
 
             // Solves the calculation in the equations array according to operator precedence
             while (equation.length !== 1){
@@ -164,7 +274,7 @@ const equals = () => {
                             result = result.toString();
                             equation.splice(i-1, 3, result);
                             multOrDiv = true;
-                            break
+                            break;
                         }
                         else{
                             multOrDiv = false;
@@ -192,41 +302,10 @@ const equals = () => {
             decimalPoint.disabled = false;
             powerButton.disabled = false;
             powerNumbers = false;
+            rootButtons.forEach(button => button.disabled = false);
         }
         })
 }
-
-const powerDisplay = () => {
-    powerButton.addEventListener('click', (event) => {
-        if ( (!input.textContent) || input.textContent[input.textContent.length - 1] === ' '){
-            input.textContent += '0';
-        }
-        const powerSymbol = document.createElement('span');
-        const power = document.createElement('span');
-        powerSymbol.id = 'powerSymbol';
-        powerSymbol.textContent = '^';
-        power.id = 'powerDisplay';
-        input.appendChild(powerSymbol);
-        input.appendChild(power);
-        powerNumbers = true;
-        addPower(power);
-        
-        powerButton.disabled = true;
-    })
-
-}
-
-const addPower = (span) => {
-    numbers.forEach(number => {
-        number.addEventListener('click', (event) => {
-            if (powerNumbers === true){
-                span.textContent += event.target.dataset.number;
-            }
-        })
-        
-    })
-}
-
 
 const solveEquation = () => {
     
@@ -235,6 +314,7 @@ const solveEquation = () => {
     operatorsDisplay();
     equals();
     powerDisplay();
+    rootDisplay();
 }
 
 
