@@ -219,16 +219,24 @@ const addPower = (span) => {
 const rootDisplay = () => {
     rootButtons.forEach(button => {
             button.addEventListener('click', (event) => {
-            if (button === rootButtons[0] && powerNumbers === false && !document.querySelector('#powerDisplay')){
-                input.textContent += event.target.dataset.root;
-                rootButtons[0].disabled = true; rootButtons[1].disabled = true;
-            }
+                // Preserves previous answer if user clicks one of the root symbols after an equation is solved.
+                if (equation.length === 1){
+                    output.textContent = parseFloat(parseFloat(equation[0]).toFixed(4)).toString();
+                    equation.splice(0, 1);
+                    input.textContent += `${event.target.dataset.root}`;
+                    rootButtons[0].disabled = true; rootButtons[1].disabled = true;
+                }
 
-            if (button === rootButtons[1] && powerNumbers === false && !document.querySelector('#powerDisplay')){
-                input.textContent += event.target.dataset.root;
-                button.disabled = true;
-                rootButtons[0].disabled = true; rootButtons[1].disabled = true;
-            }
+                else if (button === rootButtons[0] && powerNumbers === false && !document.querySelector('#powerDisplay')){
+                    input.textContent += event.target.dataset.root;
+                    rootButtons[0].disabled = true; rootButtons[1].disabled = true;
+                }
+
+                else if (button === rootButtons[1] && powerNumbers === false && !document.querySelector('#powerDisplay')){
+                    input.textContent += event.target.dataset.root;
+                    button.disabled = true;
+                    rootButtons[0].disabled = true; rootButtons[1].disabled = true;
+                }
 
         })
     })
@@ -290,6 +298,10 @@ const solveRoot = (result) => {
     const cube = rootButtons[1].dataset.root;
     let root;
     let rootIndex;
+    const lastValue = input.textContent[input.textContent.length - 1];
+    if (lastValue === square || lastValue === cube){
+        input.textContent += '0'; equation[equation.length - 1] += '0';
+    } 
     for (let i in equation){
         // Solves case when there is just a root and a base i.e 3**0.5
         if ((equation[i][0] === square
@@ -323,6 +335,64 @@ const solveRoot = (result) => {
                 equation[i] = result.toString();
 
         }
+
+        // Solves case when power and root are both present with the power coming before the root i.e 3^2**0.5
+        else if (equation[i].includes('^') 
+            && (equation[i].includes(square) || equation[i].includes(cube))){
+                let rootType;
+                if (equation[i].includes(square)){
+                    rootIndex = equation[i].indexOf(square);
+                    root = squareRoot;
+                    rootType = square;
+                } 
+                else {
+                    rootIndex = equation[i].indexOf(cube);
+                    root = cubeRoot;
+                    rootType = cube;
+                }
+                // Case when power comes before the root in the number
+                if (equation[i].indexOf('^') < rootIndex){
+                    const powerBase = equation[i].slice(0, equation[i].indexOf('^'));
+                    const exponent = equation[i].slice(equation[i].indexOf('^') + 1);
+
+                    // If there is a number before the root we have to create a multiple variable
+                    if (exponent[0] !== rootType){
+                        const multiple = exponent.slice(0, exponent.indexOf(rootType));
+                        const rootValue = exponent.slice(exponent.indexOf(rootType) + 1);
+                        result = root(parseFloat(rootValue)) * parseFloat(multiple);
+                        result = parseFloat(powerBase) ** result;
+                        equation[i] = result.toString();
+                    }
+
+                    else if (exponent[0] === rootType){
+                        const rootBase = exponent.slice(1);
+                        result = root(parseFloat(rootBase));
+                        result = parseFloat(powerBase) ** result;
+                        equation[i] = result.toString();
+                    }
+                }
+
+                // Case when the root comes before the power in the number
+                else if (equation[i].indexOf('^') > rootIndex){
+                    let multiple;
+                    let rootBase;
+                    
+                    if (rootIndex !== 0){
+                        multiple = equation[i].slice(0, rootIndex);
+                        rootBase = equation[i].slice(rootIndex + 1);
+                    }
+                    else{
+                        rootBase = equation[i].slice(rootIndex + 1);
+                    }
+
+                    const powerBase = rootBase.slice(0, rootBase.indexOf('^'));
+                    const exponent = rootBase.slice(rootBase.indexOf('^') + 1)
+                    result = root(parseFloat(powerBase) ** parseFloat(exponent));
+                    if (equation[i].indexOf(rootType) !== 0) result = result * parseFloat(multiple);
+
+                    equation[i] = result.toString();
+                }
+            }
     }
 }
 
