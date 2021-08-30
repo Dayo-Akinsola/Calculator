@@ -27,9 +27,11 @@ const factorial = a => {
     return total;
     }
 
-    // Used to calculate factorial of a decimal.
-    // Source for the fuction is apelsinapa's answer here: 
-    //https://stackoverflow.com/questions/15454183/how-to-make-a-function-that-computes-the-factorial-for-numbers-with-decimals
+    /*
+    Used to calculate factorial of a decimal.
+    Source for the function is apelsinapa's answer here: 
+    https://stackoverflow.com/questions/15454183/how-to-make-a-function-that-computes-the-factorial-for-numbers-with-decimals
+    */
     if (!Number.isInteger(a)){
         a = a + 1;
         if (a < 0.5) {return Math.PI / (Math.sin(Math.PI * a) * factorial(1 - a));}
@@ -288,8 +290,10 @@ const factorialDisplay = () => {
 
             else if (equation.length === 1){
                 output.textContent = parseFloat(parseFloat(equation[0]).toFixed(4)).toString();
-                input.textContent += fact;
                 equation.slice(0,1);
+                input.textContent = output.textContent + fact;
+                equation[0] += fact;
+                
             }
 
             else{
@@ -324,8 +328,8 @@ let multOrDiv = true;
 while (equation.length !== 1){
     if (multOrDiv === true){
         for (let i = 1; i < equation.length; i += 2){
-            if (equation[i] === '/' || equation[i] === 'x'){
-                operator = (equation[i] === '/') ? division : multiplication;
+            if (equation[i] === operators[3].dataset.operator || equation[i] === operators[0].dataset.operator){
+                operator = (equation[i] === operators[3].dataset.operator) ? division : multiplication;
                 result = operate(operator, parseFloat(equation[i - 1]), parseFloat(equation[i + 1]));
                 result = result.toString();
                 equation.splice(i-1, 3, result);
@@ -340,8 +344,8 @@ while (equation.length !== 1){
 
             if (multOrDiv === false){
                 for (let i = 1; i < equation.length; i += 2){
-                    if (equation[i] === '+' || equation[i] === '-'){
-                        operator = (equation[i] === '+') ? addition : subtraction;
+                    if (equation[i] === operators[2].dataset.operator || equation[i] === operators[1].dataset.operator){
+                        operator = (equation[i] === operators[2].dataset.operator) ? addition : subtraction;
                         result = operate(operator, parseFloat(equation[i - 1]), parseFloat(equation[i + 1]));
                         result = result.toString();
                         equation.splice(i-1, 3, result);
@@ -457,7 +461,7 @@ const solveRoot = (result) => {
 
 const solveFactorial = (result) => {
     const fact = factorialButton.dataset.factorial;
-    const decimalPoint = decimal.dataset.decimal;
+    const decimal = decimalPoint.dataset.decimal;
     for (let i in equation){
         if (equation[i].includes(fact)){
             /* 
@@ -468,14 +472,14 @@ const solveFactorial = (result) => {
             let factSymbolIndex = equation[i].indexOf(fact);
             let factStartIndex = factSymbolIndex;
 
-            while ((equation[i][factStartIndex - 1] === decimalPoint || !isNaN(equation[i][factStartIndex - 1])) && factStartIndex > 0)
+            while ((equation[i][factStartIndex - 1] === decimal || !isNaN(equation[i][factStartIndex - 1])) && factStartIndex > 0)
             factStartIndex--;
-            
+
+            // Replaces factorial equation with the result in the string
             const factorialString = equation[i].slice(factStartIndex, factSymbolIndex + 1);
             result = factorial(parseFloat(factorialString));
-            console.log(result);
-            console.log(equation[i]);
             equation[i] = equation[i].replace(factorialString, result.toString());
+
         }
 
     }
@@ -501,7 +505,10 @@ const equals = () => {
 
             output.textContent = input.textContent + ' =';
             //Sets decimals to 4 decimal places and deals with floating point errors.
+            console.log(equation);
             input.textContent = parseFloat(parseFloat(equation[0]).toFixed(4)).toString();
+            if (equation[0] === 'NaN') input.textContent = 'Math ERROR';
+
 
             decimalPoint.disabled = false;
             powerButton.disabled = false;
