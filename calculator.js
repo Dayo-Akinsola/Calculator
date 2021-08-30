@@ -13,25 +13,40 @@ const squareRoot = a => a**(1/2);
 
 const cubeRoot = a => a**(1/3);
 
-const logBase2 = (a) => {
-    let count = 0;
-    while (a > 1){
-        a = a / 2;
-        count++;
+const g = 7;
+const C = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+
+const factorial = a => {
+    if (a === 0) return 1;
+    if (Number.isInteger(a)){
+        let total = a;
+        while(a > 1){
+            total = total * (a-1); 
+            a = a - 1;
+        }
+    return total;
     }
 
-    return count;
-}
+    // Used to calculate factorial of a decimal.
+    // Source for the fuction is apelsinapa's answer here: 
+    //https://stackoverflow.com/questions/15454183/how-to-make-a-function-that-computes-the-factorial-for-numbers-with-decimals
+    if (!Number.isInteger(a)){
+        a = a + 1;
+        if (a < 0.5) {return Math.PI / (Math.sin(Math.PI * a) * factorial(1 - a));}
+        else{
+            a -= 1;
 
-const logBase10 = (a) => {
-    let count = 0;
-    while (a > 1){
-        a = a / 10;
-        count++;
+            let x = C[0];
+            for (let i = 1; i < g + 2; i++){
+                x += C[i] / (a + i);
+            }
+
+            let t = a + g + 0.5;
+            return Math.sqrt(2 * Math.PI) * Math.pow(t, (a + 0.5)) * Math.exp(-t) * x;
+        }
     }
-
-    return count;
 }
+
 
 const numbers = document.querySelectorAll('[data-number]');
 const input = document.querySelector('#input');
@@ -41,6 +56,7 @@ const equalSign = document.querySelector(['[data-result]']);
 const decimalPoint = document.querySelector('[data-decimal]');
 const powerButton = document.querySelector('[data-power]');
 const rootButtons = document.querySelectorAll('[data-root]');
+const factorialButton = document.querySelector('[data-factorial]');
 let operation;
 const equation = [];
 // Controls when numbers are inputted as a power (e.g. x^y when true, y when false).
@@ -52,7 +68,7 @@ const operate = (operator, a, b) => operator(a, b);
 const displayNumber = () => {
     numbers.forEach(number => {
         number.addEventListener('click', (event) =>{
-            if (powerNumbers === false){
+            if (powerNumbers === false && input.textContent[input.textContent.length - 1] !== factorialButton.dataset.factorial){
                 // if statment resets the calculator if a number is pressed after the equals sign is pressed
                 if (equation.length === 1){
                     input.textContent = `${number.dataset.number}`;
@@ -75,7 +91,7 @@ const operatorsDisplay = () => {
             // Removes power if user clicks an operator without giving the power any values.
             const power = document.querySelector('#powerDisplay');
             const powerSymbol  = document.querySelector('#powerSymbol');
-            if ( powerNumbers === true && (!power.textContent)){
+            if ( powerNumbers && power && (!power.textContent)){
                 power.remove(); powerSymbol.remove();
             }
 
@@ -123,9 +139,10 @@ const operatorsDisplay = () => {
                 operation = event.target.dataset.operator;
             }
             decimalPoint.disabled = false;
-            powerNumbers = false;
             powerButton.disabled = false;
+            factorialButton.disabled = false;
             rootButtons.forEach(button => button.disabled = false);
+            powerNumbers = false;
         })
     })
 
@@ -169,8 +186,8 @@ const decimals = () => {
 
 // Activates when the power button is clicked so that numbers clicked are exponents.
 const powerDisplay = () => {
-    powerButton.addEventListener('click', (event) => {
-        if ( (!input.textContent)
+    powerButton.addEventListener('click', () => {
+        if ((!input.textContent)
             || input.textContent[input.textContent.length - 1] === ' '
             || input.textContent[input.textContent.length - 1] === rootButtons[0].dataset.root
             || input.textContent[input.textContent.length - 1] === rootButtons[1].dataset.root){
@@ -199,7 +216,7 @@ const powerDisplay = () => {
 const addPower = (span) => {
     numbers.forEach(number => {
         number.addEventListener('click', (event) => {
-            if (powerNumbers === true){
+            if (powerNumbers === true && span.textContent[span.textContent.length - 1] !== factorialButton.dataset.factorial){
                 span.textContent += event.target.dataset.number;
             }
         })
@@ -213,6 +230,22 @@ const addPower = (span) => {
             }
         })
     })
+
+    factorialButton.addEventListener('click', (event) => {
+        const fact = event.target.dataset.factorial;
+        if (powerNumbers === true){
+             if (isNaN(span.textContent[span.textContent.length - 1]) || span.textContent.length === 0 
+             || span.textContent[span.textContent.length - 1] === " "){
+             span.textContent += "0";
+             span.textContent += fact;
+            }
+
+            else{
+                span.textContent += `${fact}`;
+            }
+            factorialButton.disabled = true;
+            }
+        })
 
 }
 
@@ -239,6 +272,32 @@ const rootDisplay = () => {
                 }
 
         })
+    })
+}
+
+const factorialDisplay = () => {
+    factorialButton.addEventListener('click', (event) => {
+        const fact = event.target.dataset.factorial;
+        if (powerNumbers === false){
+            // Ensures that factorial symbol is only allowed after a number
+            if (isNaN(input.textContent[input.textContent.length - 1]) || input.textContent.length === 0 
+                || input.textContent[input.textContent.length - 1] === " "){
+                input.textContent += "0";
+                input.textContent += fact;
+            }
+
+            else if (equation.length === 1){
+                output.textContent = parseFloat(parseFloat(equation[0]).toFixed(4)).toString();
+                input.textContent += fact;
+                equation.slice(0,1);
+            }
+
+            else{
+                input.textContent += `${fact}`;
+            }
+            factorialButton.disabled = true;
+        }
+
     })
 }
 
@@ -396,6 +455,32 @@ const solveRoot = (result) => {
     }
 }
 
+const solveFactorial = (result) => {
+    const fact = factorialButton.dataset.factorial;
+    const decimalPoint = decimal.dataset.decimal;
+    for (let i in equation){
+        if (equation[i].includes(fact)){
+            /* 
+            Finds the '!' symbol in the string then the while loop goes backwards from this point until 
+            the start of the factorial is found. 
+            */
+    
+            let factSymbolIndex = equation[i].indexOf(fact);
+            let factStartIndex = factSymbolIndex;
+
+            while ((equation[i][factStartIndex - 1] === decimalPoint || !isNaN(equation[i][factStartIndex - 1])) && factStartIndex > 0)
+            factStartIndex--;
+            
+            const factorialString = equation[i].slice(factStartIndex, factSymbolIndex + 1);
+            result = factorial(parseFloat(factorialString));
+            console.log(result);
+            console.log(equation[i]);
+            equation[i] = equation[i].replace(factorialString, result.toString());
+        }
+
+    }
+}
+
 const equals = () => {
     equalSign.addEventListener('click', (event) => {
         if (input.textContent[input.textContent.length - 1] !== " " && equation.length > 1)
@@ -405,6 +490,8 @@ const equals = () => {
             equation.push(lastNumber);
             let result;
             let operator;
+
+            solveFactorial(result);
             
             solveRoot(result);
 
@@ -418,6 +505,7 @@ const equals = () => {
 
             decimalPoint.disabled = false;
             powerButton.disabled = false;
+            factorialButton.disabled = false;
             powerNumbers = false;
             rootButtons.forEach(button => button.disabled = false);
         }
@@ -432,6 +520,7 @@ const solve = () => {
     equals();
     powerDisplay();
     rootDisplay();
+    factorialDisplay();
 }
 
 
