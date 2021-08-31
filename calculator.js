@@ -59,6 +59,8 @@ const decimalPoint = document.querySelector('[data-decimal]');
 const powerButton = document.querySelector('[data-power]');
 const rootButtons = document.querySelectorAll('[data-root]');
 const factorialButton = document.querySelector('[data-factorial]');
+const clearButton = document.querySelector('[data-clear]');
+const deleteButton = document.querySelector('[data-delete]');
 let operation;
 const equation = [];
 // Controls when numbers are inputted as a power (e.g. x^y when true, y when false).
@@ -67,6 +69,69 @@ let powerNumbers = false;
 // function to use the operators
 const operate = (operator, a, b) => operator(a, b);
 
+const resetDisabledButtons = () => {
+    decimalPoint.disabled = false;
+    powerButton.disabled = false;
+    factorialButton.disabled = false;
+    powerNumbers = false;
+    rootButtons.forEach(button => button.disabled = false);
+}
+
+const clearDisplay = () => {
+    clearButton.addEventListener('click', () => {
+        while(equation.length > 0) equation.pop();
+        input.textContent = "";
+        output.textContent = "";
+
+        resetDisabledButtons();
+    })
+}
+
+const deleteDisplay = () => {
+    const operatorsArray = []
+    operators.forEach(operator => operatorsArray.push(operator.dataset.operator));
+    deleteButton.addEventListener('click', (event) => {
+        //Handles case where user deletes an operator
+        if (operatorsArray.includes(equation[equation.length - 1]) 
+            && operatorsArray.includes(input.textContent[input.textContent.length - 2])){
+
+            console.log("case1");
+            equation.pop();
+            input.textContent = input.textContent.substring(0, input.textContent.length - 3);
+        }
+
+
+        else if (equation[equation.length - 1] !== input.textContent[input.textContent.length - 1]){
+            console.log("case2");
+            console.log(equation[equation.length - 1]);
+            console.log(input.textContent[input.textContent.length - 1]);
+            input.textContent = input.textContent.substring(0, input.textContent.length - 1);
+        }
+
+        //Handles case when there is one place left in the current array index before the user deletes
+        else if (!equation[equation.length - 1].slice(0, -1)){
+            console.log("case3");
+            equation.pop();
+            input.textContent = input.textContent.substring(0, input.textContent.length - 1);
+        }
+
+        else if (equation[equation.length - 1] === input.textContent[input.textContent.length - 1]){
+            console.log("case4");
+            console.log(equation[equation.length - 1]);
+            input.textContent = input.textContent.substring(0, input.textContent.length - 1);
+            equation[equation.length - 1].substring(0, equation[equation.length - 1].length - 1)
+        }
+        
+        else if (equation[equation.length - 1].slice(0, -1)){
+            console.log("case5");
+            equation[equation.length - 1] = equation[equation.length - 1].substring(0, equation[equation.length - 1].length - 1);
+            input.textContent = input.textContent.substring(0, input.textContent.length - 1);
+        }
+        console.log(equation);
+    })  
+}
+
+//Shows number on calculator display when clicked
 const displayNumber = () => {
     numbers.forEach(number => {
         number.addEventListener('click', (event) =>{
@@ -140,11 +205,8 @@ const operatorsDisplay = () => {
                 input.textContent += ` ${event.target.dataset.operator} `;
                 operation = event.target.dataset.operator;
             }
-            decimalPoint.disabled = false;
-            powerButton.disabled = false;
-            factorialButton.disabled = false;
-            rootButtons.forEach(button => button.disabled = false);
-            powerNumbers = false;
+            resetDisabledButtons();
+            console.log(equation);
         })
     })
 
@@ -487,37 +549,37 @@ const solveFactorial = (result) => {
 
 const equals = () => {
     equalSign.addEventListener('click', (event) => {
-        if (input.textContent[input.textContent.length - 1] !== " " && equation.length > 1)
+        if (input.textContent[input.textContent.length - 1] !== " " && equation.length >= 0 && input.textContent)
         {
+        
             const operatorIndex = input.textContent.lastIndexOf(operation) + 2;
             const lastNumber = input.textContent.substring(operatorIndex);
             equation.push(lastNumber);
             let result;
             let operator;
 
+            if (equation.length == 1 || equation.length == 2){
+                equation[0] = input.textContent;
+                equation.splice(1, 1);
+            }
+
+
             solveFactorial(result);
-            
             solveRoot(result);
-
             solvePowers(result);
-
             solveEquation(result, operator);
 
             output.textContent = input.textContent + ' =';
             //Sets decimals to 4 decimal places and deals with floating point errors.
-            console.log(equation);
             input.textContent = parseFloat(parseFloat(equation[0]).toFixed(4)).toString();
             if (equation[0] === 'NaN') input.textContent = 'Math ERROR';
 
-
-            decimalPoint.disabled = false;
-            powerButton.disabled = false;
-            factorialButton.disabled = false;
-            powerNumbers = false;
-            rootButtons.forEach(button => button.disabled = false);
+            resetDisabledButtons();
+            
         }
         })
 }
+
 
 const solve = () => {
 
@@ -528,6 +590,8 @@ const solve = () => {
     powerDisplay();
     rootDisplay();
     factorialDisplay();
+    clearDisplay();
+    deleteDisplay();
 }
 
 
