@@ -100,6 +100,7 @@ const deleteDisplay = (element, listener) => {
             for (let i = 0; i < equation.length; i++){
                 equationLength += equation[i].length;
             }
+            
 
             // Allows user to type these operations again when they have been deleted from the display
             if (input.textContent.slice(-1) === factorialButton.dataset.factorial) factorialButton.disabled = false;
@@ -109,9 +110,12 @@ const deleteDisplay = (element, listener) => {
                     rootButtons[0].disabled = false; rootButtons[1].disabled = false;
                 }
             })
+
+            if (equation.length === 0 && input.textContent === ""){
+            }
             
             //Handles case where user deletes an operator
-            if (operatorsArray.includes(equation[equation.length - 1]) 
+            else if (operatorsArray.includes(equation[equation.length - 1]) 
                 && operatorsArray.includes(input.textContent[input.textContent.length - 2])){
                 equation.pop();
                 input.textContent = input.textContent.substring(0, input.textContent.length - 3);
@@ -145,11 +149,9 @@ const deleteDisplay = (element, listener) => {
                 else{
                 input.textContent = input.textContent.substring(0, input.textContent.length - 1);
                 }
-                console.log("case2");   
             }
 
             else if (equationLength === input.textContent.replace(/\s+/g, '').length){
-                console.log("case3");
                 input.textContent = input.textContent.substring(0, input.textContent.length - 1);
                 equation[equation.length - 1] = equation[equation.length - 1].substring(0, equation[equation.length - 1].length - 1);
             }
@@ -355,8 +357,6 @@ const rootDisplay = (element, listener) => {
     rootButtons.forEach(button => {
         if (listener === 'click') element = button;
             element.addEventListener(listener, (event) => {
-                console.log(event.key);
-                console.log(button.dataset.key);
                 if (listener === 'click' || event.key === button.dataset.key && !button.disabled){
                     // Preserves previous answer if user clicks one of the root symbols after an equation is solved.
                     if (equation.length === 1){
@@ -412,7 +412,7 @@ const factorialDisplay = (element, listener) => {
 }
 
 const solvePowers = (result) => {
-    // Goes through the equations array an checks for any ^ so powers can be solved first
+    // Goes through the equations array an checks for any ^ so powers can be solved
     for (let i in equation){
         if (typeof equation[i] == "string" && equation[i].indexOf('^') > -1){
             const caratIndex = equation[i].indexOf('^');
