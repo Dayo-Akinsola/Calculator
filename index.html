@@ -5,9 +5,10 @@
         <link rel="stylesheet" href="style.css" />
     </head>
     <script type="module" src="calculator.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital@1&display=swap" rel="stylesheet">
     
     <body>
-        <h1>Online Calculator</h1>
+            <h1>Online Calculator</h1>
             <div class="contents">
                 <div class="output">
                     <span id="equation"></span>
@@ -16,8 +17,8 @@
                 <div class="buttons" id="seven"><button data-number="7">7</button></div>
                 <div class="buttons" id="eight"><button data-number="8">8</button></div>
                 <div class="buttons" id="nine"><button data-number="9">9</button></div>
-                <div class="buttons" id="AC"><button data-clear="AC">AC</button></div>
-                <div class="buttons" id="deleteButton"><button data-delete="Backspace">DEL</button></div>
+                <div class="buttons" id="square-root"><button data-root="&#8730" data-key="s">&#8730</button></div>
+                <div class="buttons" id="cube-root"><button data-root="&#8731" data-key="c">&#8731</button></div>
                 <div class="buttons" id="four"><button data-number="4">4</button></div>
                 <div class="buttons" id="five"><button data-number="5">5</button></div>
                 <div class="buttons" id="six"><button data-number="6">6</button></div>
@@ -31,10 +32,13 @@
                 <div class="buttons" id="zero"><button data-number="0">0</button></div>
                 <div class="buttons" id="decimal"><button data-decimal=".">.</button></div>
                 <div class="buttons" id="power"><button data-power="^">x<sup>y</sup></button></div>
-                <div class="buttons" id="equal"><button data-result="=">=</button></div>
                 <div class="buttons" id="factorial"><button data-factorial="!">x!</button></div>
-                <div class="buttons" id="square-root"><button data-root="&#8730" data-key="s">&#8730</button></div>
-                <div class="buttons" id="cube-root"><button data-root="&#8731" data-key="c">&#8731</button></div>
+                <div class="buttons" id="equal"><button data-result="=">=</button></div>
+                <div class="buttons" id="AC"><button data-clear="AC">AC</button></div>
+                <div class="buttons" id="deleteButton"><button data-delete="Backspace">DEL</button></div>
+            </div>
+            <div class="instructions">
+                <p>Press <b><u>s</u></b> for &#8730 and <b><u>c</u></b> for &#8731 on keyboard</p>
             </div>
     </body>
 </html>
