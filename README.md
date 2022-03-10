@@ -1,5 +1,5 @@
 # Calculator
-/
+
 The calculator can parse and accurately calculate a mathematical expression of any length.
 
 [Live Site](https://dayo-akinsola.github.io/Calculator/)
